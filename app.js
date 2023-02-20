@@ -17,11 +17,11 @@ App({
      */
     onLaunch () {
         wx.cloud.init({
-            env:'cloud1-4gv4k6tha1359b2c',
+            env:'需要替换成自己的云开发id',
             traceUser:true
         })
         wx.cloud.init({
-            env:'cloud1-4gv4k6tha1359b2c',
+            env:'需要替换成自己的云开发id',
             traceUser:true
         })
         this.saveUserInfoIfNotExist()
@@ -50,7 +50,7 @@ App({
 
     async saveUserInfoIfNotExist () {
         const db = wx.cloud.database({
-            env:'cloud1-4gv4k6tha1359b2c',
+            env:'需要替换成自己的云开发id',
         })
         var userInfo = this.userInfo
         wx.cloud.callFunction({
@@ -62,9 +62,9 @@ App({
 
                 wx.cloud.callContainer({
                     "config": {
-                      "env": "prod-6gyeup90093341a8"
+                      "env": "需要替换成自己的云托管id"
                     },
-                    "path": "/TCGMGR/aicode/getUser",
+                    "path": "/GPTMGR/aicode/getUser",
                     "header": {
                       "X-WX-SERVICE": "springboot-xg02"
                     },
@@ -86,9 +86,9 @@ App({
                                 console.info('账号不存在')
                                 wx.cloud.callContainer({
                                     "config": {
-                                      "env": "prod-6gyeup90093341a8"
+                                      "env": "需要替换成自己的云托管id"
                                     },
-                                    "path": "/TCGMGR/aicode/register",
+                                    "path": "/GPTMGR/aicode/register",
                                     "header": {
                                       "X-WX-SERVICE": "springboot-xg02"
                                     },

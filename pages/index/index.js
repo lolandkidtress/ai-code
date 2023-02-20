@@ -94,9 +94,9 @@ Page({
         }
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": "需要替换成自己的云托管id"
             },
-            "path": "/TCGMGR/aicode/doRequest",
+            "path": "/GPTMGR/aicode/doRequest",
             "header": {
               "X-WX-SERVICE": "springboot-xg02",
               "content-type": "application/json"
@@ -218,9 +218,9 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": "需要替换成自己的云托管id"
             },
-            "path": "/TCGMGR/aicode/inputCode",
+            "path": "/GPTMGR/aicode/inputCode",
             "header": {
               "X-WX-SERVICE": "springboot-xg02"
             },
@@ -286,9 +286,9 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": "需要替换成自己的云托管id"
             },
-            "path": "/TCGMGR/aicode/incrQuota",
+            "path": "/GPTMGR/aicode/incrQuota",
             "header": {
               "X-WX-SERVICE": "springboot-xg02"
             },
@@ -309,9 +309,9 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": "需要替换成自己的云托管id"
             },
-            "path": "/TCGMGR/aicode/getQuota",
+            "path": "/GPTMGR/aicode/getQuota",
             "header": {
               "X-WX-SERVICE": "springboot-xg02"
             },
@@ -350,9 +350,9 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": "需要替换成自己的云托管id"
             },
-            "path": "/TCGMGR/aicode/getUser",
+            "path": "/GPTMGR/aicode/getUser",
             "header": {
               "X-WX-SERVICE": "springboot-xg02"
             },
