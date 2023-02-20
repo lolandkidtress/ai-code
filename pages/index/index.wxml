@@ -1,0 +1,162 @@
+<!--pages/index/index.wxml-->
+<view class="container">
+
+    <scroll-view class="header" scroll-y="{{true}}" scroll-with-animation="{{true}}" 	enable-passive="{{true}}" fast-deceleration="{{true}}" 	scroll-top="{{scrollTop}}" scroll-anchoring="{{true}}" >
+        <view class="header_container">
+            <view class="box box_left">
+                请描述您的需求,我将生成代码片段来回答~。
+                <button class="button flex_row" bindtap="showInputCode">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    输入邀请码获取更多次数
+                </button>
+                <button class="button flex_row" data-content="{{item.content}}" bindtap="showHelp">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    显示帮助信息
+                </button>
+                <button class="button flex_row" data-content="{{item.content}}" bindtap="showSource">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    提供源码和部署指导
+                </button>
+            </view>
+            <view wx:if="{{showSourceText}}" class="box box_left">
+                <view>
+                    提供全套源码和部署指导,10分钟即可部署,提交审核,具体请点击右侧联系客服
+                </view>
+                <view>
+                    Q.事先准备
+                </view>
+                <view>
+                    1.准备好微信小程序账号(必要)
+                </view>
+                <view>
+                    2.自己电脑上安装好最新的微信开发者工具(可后续安装)
+                </view>
+                <view>
+                    3.自己电脑安装好java和maven环境(可后续安装)
+                </view>
+            </view>
+            <view wx:if="{{showHelpText}}" class="box box_left">
+                <view>
+                    可以根据用户提供的需求描述，自动生成代码。可以帮助开发人员更快地完成代码编写，减少重复性工作，提高开发效率。
+                </view>
+                <view>
+                    Q.如何使用?
+                </view>
+                <view>
+                    A.只需要描述你的代码需求，懒人编程就会返回代码或解决方案；
+                </view>
+                <view>
+                    Q.答案代码不满足我的需求？
+                </view>
+                <view>
+                    A.请尝试用清晰的描述，复杂点的需求最好分步骤描述；
+                </view>
+                <view>
+                    Q.如何获得代码？
+                </view>
+                <view>
+                    A.清晰的描述你的需求之后，最后添加一句：请给我返回完整代码；更容易满足你的要求；
+                </view>
+                <view>
+                    常用咒语:
+                </view>
+                <view>
+                    使用说明：在你的正常问题描述之后，最后额外带上咒语即可；
+                </view>
+                <view>
+                    1.使用中文:返回中文的答案
+                </view>
+                <view>
+                    2.需要精简概括:返回结果控制在4K字以内
+                </view>
+                <view>
+                    3.优化代码格式:返回的代码优化格式显示
+                </view>
+                <button class="button flex_row" data-content="{{item.content}}" bindtap="getQuota">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    查询我的使用次数
+                </button>
+            </view>
+            <view wx:if="{{showInputInviteCodeText}}" class="box box_left">
+                <label class="tag" >邀请码:</label>
+                <input type="text" id="invitecode" placeholder="请在此输入邀请码" bindchange="handleInviteCodeChange"/>
+                <button class="button flex_row" data-content="{{item.content}}" bindtap="inviteCode">
+                    <image src="/images/share.png" mode="widthFix" class="icon_share"/>
+                    获取我的邀请码
+                </button>
+                <button class="button flex_row" bindtap="inputCode">
+                    <image src="/images/send.png"  mode="widthFix" class="icon_copy"/>
+                    保存
+                </button>
+            </view>
+
+            <block wx:for="{{items}}" wx:key="index">
+                
+                <view class="flex_row">
+                    <view wx:if="{{item.position === 'left'}}" class="box box_left">
+                        <view wx:if="{{item.content}}">
+                            <text decode="{{true}}" style="word-break: break-all;">{{item.content}}</text>
+                        </view>
+                        <view wx:else class="loader_container flex_row">
+                            <view class="loader four"></view>
+                        </view>
+                    </view>
+                </view>
+                <view  wx:if="{{item.position === 'left' && item.content && item.success === 'true'}}" class="control flex_row">
+                    <button class="button flex_row" data-content="{{item.content}}" bindtap="copyContent">
+                        <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        复制回答
+                    </button>
+                    <button class="button flex_row" open-type="share" data-index="{{index}}">
+                        <image src="/images/share.png" mode="widthFix" class="icon_share"/>
+                        分享内容
+                    </button>
+                </view>
+                <view  wx:if="{{item.position === 'left' && item.content && item.success === 'quotalimit'}}" class="control flex_row">
+                    <button class="button flex_row" data-content="{{item.content}}" bindtap="inviteCode">
+                        <image src="/images/share.png" mode="widthFix" class="icon_share"/>
+                        邀请朋友获取更多使用次数
+                    </button>
+                </view>    
+                <view  wx:if="{{item.position === 'left' && item.content && item.success === 'quotalimit'}}" class="control flex_row">
+                    <button class="button flex_row" data-content="{{item.content}}" bindtap="inputCode">
+                        <image src="/images/share.png" mode="widthFix" class="icon_share"/>
+                        输入验证码获取更多次数
+                    </button>
+                </view>
+                <view  wx:if="{{item.position === 'left' && item.content && item.success === 'invitecode'}}" class="control flex_row">
+                    <button class="button flex_row" data-content="{{item.content}}" bindtap="copyContent">
+                        <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        复制邀请码
+                    </button>
+                </view>
+                <view  wx:if="{{item.position === 'left' && item.content && item.success === 'invitecodesuccess'}}" class="control flex_row">
+                    <button class="button flex_row" data-content="{{item.content}}" bindtap="getQuota">
+                        <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        查询我的使用次数
+                    </button>
+                </view>
+                <view class="flex_row" style="justify-content: flex-end;">
+                    <view wx:if="{{item.position === 'right'}}" class="box box_right" style="white-space:pre-wrap;">
+                        <text decode="{{true}}" style="word-break: break-all;">{{item.content}}</text>
+                    </view> 
+                </view> 
+            </block>
+        </view>
+    </scroll-view>
+
+    <button class="contact flex_row" open-type="contact">
+        <image class="contact_img" src="/images/contact.png" mode="widthFix"/>
+    </button>
+    
+    <view class="footer">
+        <view class="footer_box flex_row">
+            <view class="footer_left">
+                <input type="text" value="{{value}}" cursor-spacing="30" bindinput="handleInput" placeholder="请输入..."/>
+            </view>
+            <view class="footer_right flex_row" bindtap="sendContent">
+                <image src="/images/send.png" mode="widthFix" class="icon_send"/>
+            </view>
+        </view>
+    </view>
+</view>

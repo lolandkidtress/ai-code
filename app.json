@@ -1,0 +1,12 @@
+{
+    "pages": [
+      "pages/index/index"
+    ],
+    "window": {
+      "backgroundTextStyle": "light",
+      "navigationBarBackgroundColor": "#353540",
+      "navigationBarTitleText": "AI懒人编程",
+      "navigationBarTextStyle": "white"
+    },
+    "sitemapLocation": "sitemap.json"
+  }
