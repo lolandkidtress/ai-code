@@ -40,10 +40,24 @@ Page({
     },
 
     handleInput(e) {
+        // console.info(e.detail.value)
+        this.data.value = e.detail.value
+    },
+
+    sendContent() {
+        console.info('sendContent');
+        const { items, value, scrollTop } = this.data
+        if(value === null) {
+            wx.showToast({
+                title: '请输入内容',
+                icon:'none'
+            })
+            return 
+        }
         wx.cloud.callFunction({
             name:"msgSecCheck",
             data:{
-              msg: e.detail.value,
+              msg: value,
             }
         }).then(res=>{
             console.log(res)
@@ -54,99 +68,98 @@ Page({
                     title: '内容包含敏感词,请重新数据',
                     icon:'none'
                 })
+                return 
             } else {
-                console.log("检查通过");
-                this.data.value = e.detail.value
-            }
-        })
-    },
+                if(value.length < 5) {
+                    wx.showToast({
+                        title: '输入的问题过于简单',
+                        icon:'none'
+                    })
+                    return
+                }
+                if(value.length > 40) {
+                    wx.showToast({
+                        title: '请精简问题到40个字以内',
+                        icon:'none'
+                    })
+                    return
+                }
+                if (this.data.flag) return
+                this.data.flag = true
+                items.push({
+                    success: 'true',
+                    position: 'right',
+                    content: value
+                })
+                items.push({
+                    success: 'true',
+                    position: 'left',
+                    content: ''
+                })
 
-    sendContent() {
-        const { items, value, scrollTop } = this.data
-        if(value === null) {
-            return 
-        }
-        
-        
-        if (this.data.flag) return
-        this.data.flag = true
-        items.push({
-            success: 'true',
-            position: 'right',
-            content: value
-        })
-        items.push({
-            success: 'true',
-            position: 'left',
-            content: ''
-        })
+                this.setData({ items, value: null, scrollTop: scrollTop + 2000 })
+                const his = items.filter(res=> res.position === 'right').map(res => res.content)
+                his.pop()
+                wx.cloud.callContainer({
+                    "config": {
+                    "env": app.envId
+                    },
+                    "path": "/TCGMGR/aicode/doRequest",
+                    "header": {
+                    "X-WX-SERVICE": app.serviceId,
+                    "content-type": "application/json"
+                    },
+                    "method": "POST",
+                    "data": {
+                    "openId": app.userInfo.openId,
+                    "question": value,
+                    "method": "post"
+                    }
+                }).then(res=>{
+                    let item = items.slice(-1)[0]
+                    console.info(res)
+                    let statusCode = res.statusCode
+                    if(200 === statusCode){
+                        let response = res.data
+                        let code = response.code
+                        if(code === 10200) {
+                            item.content = res.data.data
+                            console.info(item.content)
+                            item.success = 'true'
+                            this.setData({ items })
 
-        this.setData({ items, value: null, scrollTop: scrollTop + 2000 })
-        const his = items.filter(res=> res.position === 'right').map(res => res.content)
-        his.pop()
+                            this.incrQuota()
 
-        if(value.length < 5 || value.length > 40) {
-            let item = items.slice(-1)[0]
-            item.content = '输入的问题字数不正确,支持5-40个字'
-            item.success = 'false'
-            this.setData({ items, flag: false })
-            return
-        }
-        wx.cloud.callContainer({
-            "config": {
-              "env": app.envId
-            },
-            "path": "/TCGMGR/aicode/doRequest",
-            "header": {
-              "X-WX-SERVICE": app.serviceId,
-              "content-type": "application/json"
-            },
-            "method": "POST",
-            "data": {
-              "openId": app.userInfo.openId,
-              "question": value,
-              "method": "post"
-            }
-          }).then(res=>{
-            let item = items.slice(-1)[0]
-            console.info(res)
-            let statusCode = res.statusCode
-            if(200 === statusCode){
-                let response = res.data
-                let code = response.code
-                if(code === 10200) {
-                    item.content = res.data.data
-                    console.info(item.content)
-                    item.success = 'true'
-                    this.setData({ items })
-
-                    this.incrQuota()
-
-                } else if(code === 10600) {
-                    item.content = '使用次数已耗尽'
-                    item.success = 'quotalimit'
-                    this.setData({ items, flag: false })
-                } else {
-                    item.content = '服务负载过高,请稍后再试'
+                        } else if(code === 10600) {
+                            item.content = '使用次数已耗尽'
+                            item.success = 'quotalimit'
+                            this.setData({ items, flag: false })
+                        } else {
+                            item.content = '服务负载过高,请稍后再试'
+                            item.success = 'false'
+                            this.setData({ items, flag: false })
+                        }
+                    } else {
+                        let item = items.slice(-1)[0]
+                        item.content = '服务器负载过高,请稍后再试'
+                        item.success = 'false'
+                        this.setData({ items, flag: false })
+                    }
+                    setTimeout(()=>{
+                        this.setData({flag: false, scrollTop: scrollTop + 2000 })
+                    })
+                }).catch(res=>{
+                    console.info(res)
+                    let item = items.slice(-1)[0]
+                    item.content = '服务器太火爆了,请稍后再试'
                     item.success = 'false'
                     this.setData({ items, flag: false })
-                }
-            } else {
-                let item = items.slice(-1)[0]
-                item.content = '服务器负载过高,请稍后再试'
-                item.success = 'false'
-                this.setData({ items, flag: false })
+                })
             }
-            setTimeout(()=>{
-                this.setData({flag: false, scrollTop: scrollTop + 2000 })
-            })
-          }).catch(res=>{
-            console.info(res)
-            let item = items.slice(-1)[0]
-            item.content = '服务器太火爆了,请稍后再试'
-            item.success = 'false'
-            this.setData({ items, flag: false })
         })
+
+        
+        
 
         // this.api.ai.sendQuery({ his, query: value })
         // .then(res=> {
