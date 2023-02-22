@@ -4,7 +4,7 @@
     <scroll-view class="header" scroll-y="{{true}}" scroll-with-animation="{{true}}" 	enable-passive="{{true}}" fast-deceleration="{{true}}" 	scroll-top="{{scrollTop}}" scroll-anchoring="{{true}}" >
         <view class="header_container">
             <view class="box box_left">
-                请描述您的需求,我将生成代码片段来回答~。
+                请描述您的需求,我将生成代码片段来回答~。(不支持上下文方式)
                 <button class="button flex_row" bindtap="showInputCode">
                     <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
                     输入邀请码获取更多次数
@@ -16,6 +16,10 @@
                 <button class="button flex_row" data-content="{{item.content}}" bindtap="showSource">
                     <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
                     提供源码和部署指导
+                </button>
+                <button class="button flex_row" data-content="{{item.content}}" bindtap="getLoad">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    查询当前服务负载
                 </button>
             </view>
             <view wx:if="{{showSourceText}}" class="box box_left">

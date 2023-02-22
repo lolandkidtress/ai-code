@@ -94,11 +94,11 @@ Page({
         }
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": app.envId
             },
             "path": "/TCGMGR/aicode/doRequest",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02",
+              "X-WX-SERVICE": app.serviceId,
               "content-type": "application/json"
             },
             "method": "POST",
@@ -218,11 +218,11 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": app.envId
             },
             "path": "/TCGMGR/aicode/inputCode",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02"
+              "X-WX-SERVICE": app.serviceId
             },
             "method": "POST",
             "data": {
@@ -286,11 +286,11 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": app.envId
             },
             "path": "/TCGMGR/aicode/incrQuota",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02"
+              "X-WX-SERVICE": app.serviceId
             },
             "method": "POST",
             "data": {
@@ -309,11 +309,11 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": app.envId
             },
             "path": "/TCGMGR/aicode/getQuota",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02"
+              "X-WX-SERVICE": app.serviceId
             },
             "method": "GET",
             "data": {
@@ -350,11 +350,11 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "prod-6gyeup90093341a8"
+              "env": app.envId
             },
             "path": "/TCGMGR/aicode/getUser",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02"
+              "X-WX-SERVICE": app.serviceId
             },
             "method": "GET",
             "data": {
@@ -389,7 +389,39 @@ Page({
             }
         })
     },
-    
+    getLoad() {
+        console.info('getLoad')
+        var that = this
+        wx.cloud.callContainer({
+            "config": {
+              "env": app.envId
+            },
+            "path": "/TCGMGR/aicode/getServerUsability",
+            "header": {
+              "X-WX-SERVICE": app.serviceId
+            },
+            "method": "GET",
+            "data": {
+            },
+            success: function(res){
+                console.info(res)
+                let statusCode = res.statusCode
+                if(200===statusCode){
+                    let loaddata = res.data.data
+                    let items = []
+                    items.push({
+                        success: '',
+                        position: 'left',
+                        content: '当前服务器负载为:' + loaddata
+                    })
+                    that.setData({ items })
+                }
+            },
+            fail: function(res){
+                console.info(res)
+            }
+        })
+    },
     /**
      * 生命周期函数--监听页面隐藏
      */

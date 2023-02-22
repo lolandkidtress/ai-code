@@ -11,17 +11,15 @@ App({
         cnt: null,
         openId: null,
     },
-    maxFreeCnt: 5,
+    cloudId: 'cloud1-4gv4k6tha1359b2c',
+    envId: 'prod-6gyeup90093341a8',
+    serviceId: 'springboot-xg02',
     /**
      * 当小程序初始化完成时，会触发 onLaunch（全局只触发一次）
      */
     onLaunch () {
         wx.cloud.init({
-            env:'cloud1-4gv4k6tha1359b2c',
-            traceUser:true
-        })
-        wx.cloud.init({
-            env:'cloud1-4gv4k6tha1359b2c',
+            env:this.cloudId,
             traceUser:true
         })
         this.saveUserInfoIfNotExist()
@@ -49,9 +47,6 @@ App({
     },
 
     async saveUserInfoIfNotExist () {
-        const db = wx.cloud.database({
-            env:'cloud1-4gv4k6tha1359b2c',
-        })
         var userInfo = this.userInfo
         wx.cloud.callFunction({
             name: 'getUserOpenId',
@@ -62,11 +57,11 @@ App({
 
                 wx.cloud.callContainer({
                     "config": {
-                      "env": "prod-6gyeup90093341a8"
+                      "env": this.envId
                     },
                     "path": "/TCGMGR/aicode/getUser",
                     "header": {
-                      "X-WX-SERVICE": "springboot-xg02"
+                      "X-WX-SERVICE": this.serviceId
                     },
                     "method": "GET",
                     "data": {
@@ -86,11 +81,11 @@ App({
                                 console.info('账号不存在')
                                 wx.cloud.callContainer({
                                     "config": {
-                                      "env": "prod-6gyeup90093341a8"
+                                      "env": this.envId
                                     },
                                     "path": "/TCGMGR/aicode/register",
                                     "header": {
-                                      "X-WX-SERVICE": "springboot-xg02"
+                                      "X-WX-SERVICE": this.serviceId
                                     },
                                     "method": "POST",
                                     "data": {
