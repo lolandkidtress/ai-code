@@ -40,6 +40,21 @@ Page({
     },
 
     handleInput(e) {
+        // console.info(e.detail.value)
+        this.data.value = e.detail.value
+        this.setData({value: e.detail.value})
+    },
+
+    sendContent() {
+        console.info('sendContent');
+        const { items, value, scrollTop } = this.data
+        if(value === null) {
+            wx.showToast({
+                title: '请输入内容',
+                icon:'none'
+            })
+            return 
+        }
         wx.cloud.callFunction({
             name:"msgSecCheck",
             data:{
@@ -60,7 +75,6 @@ Page({
             }
         })
     },
-
     sendContent() {
         const { items, value, scrollTop } = this.data
         if(value === null) {
@@ -81,33 +95,32 @@ Page({
             content: ''
         })
 
-        this.setData({ items, value: null, scrollTop: scrollTop + 2000 })
+        // this.setData({ items, value: null, scrollTop: scrollTop + 2000 })
         const his = items.filter(res=> res.position === 'right').map(res => res.content)
         his.pop()
-
         if(value.length < 5 || value.length > 40) {
             let item = items.slice(-1)[0]
             item.content = '输入的问题字数不正确,支持5-40个字'
             item.success = 'false'
-            this.setData({ items, flag: false })
+            this.setData({ items, flag: false , scrollTop: scrollTop + 2000 })
             return
         }
         wx.cloud.callContainer({
             "config": {
-              "env": "需要替换成自己的云托管id"
+            "env": app.envId
             },
-            "path": "/GPTMGR/aicode/doRequest",
+            "path": "/GPTMGR/aicode/doAsk",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02",
-              "content-type": "application/json"
+            "X-WX-SERVICE": app.serviceId,
+            "content-type": "application/json"
             },
             "method": "POST",
             "data": {
-              "openId": app.userInfo.openId,
-              "question": value,
-              "method": "post"
+            "openId": app.userInfo.openId,
+            "question": value,
+            "method": "post"
             }
-          }).then(res=>{
+        }).then(res=>{
             let item = items.slice(-1)[0]
             console.info(res)
             let statusCode = res.statusCode
@@ -125,45 +138,28 @@ Page({
                 } else if(code === 10600) {
                     item.content = '使用次数已耗尽'
                     item.success = 'quotalimit'
-                    this.setData({ items, flag: false })
+                    this.setData({ items, flag: false ,scrollTop: scrollTop + 2000 })
                 } else {
                     item.content = '服务负载过高,请稍后再试'
                     item.success = 'false'
-                    this.setData({ items, flag: false })
+                    this.setData({ items, flag: false ,scrollTop: scrollTop + 2000 })
                 }
             } else {
                 let item = items.slice(-1)[0]
                 item.content = '服务器负载过高,请稍后再试'
                 item.success = 'false'
-                this.setData({ items, flag: false })
+                this.setData({ items, flag: false ,scrollTop: scrollTop + 2000 })
             }
             setTimeout(()=>{
                 this.setData({flag: false, scrollTop: scrollTop + 2000 })
             })
-          }).catch(res=>{
+        }).catch(res=>{
             console.info(res)
             let item = items.slice(-1)[0]
             item.content = '服务器太火爆了,请稍后再试'
             item.success = 'false'
-            this.setData({ items, flag: false })
+            this.setData({ items, flag: false ,scrollTop: scrollTop + 2000 })
         })
-
-        // this.api.ai.sendQuery({ his, query: value })
-        // .then(res=> {
-        //     let item = items.slice(-1)[0]
-        //     item.content = res.data
-        //     item.success = 'true'
-        //     this.setData({ items })
-        //     setTimeout(()=>{
-        //         this.setData({flag: false, scrollTop: scrollTop + 2000 })
-        //     })
-        // })
-        // .catch(res=>{
-        //     let item = items.slice(-1)[0]
-        //     item.content = '服务器太火爆了,请稍后再试'
-        //     item.success = 'false'
-        //     this.setData({ items, flag: false })
-        // })
     },
 
     copyContent(e) {
@@ -218,11 +214,11 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "需要替换成自己的云托管id"
+              "env": app.envId
             },
             "path": "/GPTMGR/aicode/inputCode",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02"
+              "X-WX-SERVICE": app.serviceId,
             },
             "method": "POST",
             "data": {
@@ -286,11 +282,11 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "需要替换成自己的云托管id"
+              "env": app.envId
             },
             "path": "/GPTMGR/aicode/incrQuota",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02"
+              "X-WX-SERVICE": app.serviceId,
             },
             "method": "POST",
             "data": {
@@ -309,11 +305,11 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "需要替换成自己的云托管id"
+              "env": app.envId
             },
             "path": "/GPTMGR/aicode/getQuota",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02"
+              "X-WX-SERVICE": app.serviceId
             },
             "method": "GET",
             "data": {
@@ -350,11 +346,11 @@ Page({
         var that = this
         wx.cloud.callContainer({
             "config": {
-              "env": "需要替换成自己的云托管id"
+              "env": app.envId
             },
             "path": "/GPTMGR/aicode/getUser",
             "header": {
-              "X-WX-SERVICE": "springboot-xg02"
+              "X-WX-SERVICE": app.serviceId
             },
             "method": "GET",
             "data": {
@@ -389,7 +385,39 @@ Page({
             }
         })
     },
-    
+    getLoad() {
+        console.info('getLoad')
+        var that = this
+        wx.cloud.callContainer({
+            "config": {
+              "env": app.envId
+            },
+            "path": "/GPTMGR/aicode/getServerUsability",
+            "header": {
+              "X-WX-SERVICE": app.serviceId
+            },
+            "method": "GET",
+            "data": {
+            },
+            success: function(res){
+                console.info(res)
+                let statusCode = res.statusCode
+                if(200===statusCode){
+                    let loaddata = res.data.data
+                    let items = []
+                    items.push({
+                        success: '',
+                        position: 'left',
+                        content: '当前服务器负载为:' + loaddata
+                    })
+                    that.setData({ items })
+                }
+            },
+            fail: function(res){
+                console.info(res)
+            }
+        })
+    },
     /**
      * 生命周期函数--监听页面隐藏
      */

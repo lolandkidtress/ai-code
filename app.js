@@ -11,17 +11,15 @@ App({
         cnt: null,
         openId: null,
     },
-    maxFreeCnt: 5,
+    cloudId: 'cloud1-4gv4k6tha1359b',
+    envId: 'prod-6gyeup90093341',
+    serviceId: 'uat',
     /**
      * 当小程序初始化完成时，会触发 onLaunch（全局只触发一次）
      */
     onLaunch () {
         wx.cloud.init({
-            env:'需要替换成自己的云开发id',
-            traceUser:true
-        })
-        wx.cloud.init({
-            env:'需要替换成自己的云开发id',
+            env:this.cloudId,
             traceUser:true
         })
         this.saveUserInfoIfNotExist()
@@ -49,10 +47,8 @@ App({
     },
 
     async saveUserInfoIfNotExist () {
-        const db = wx.cloud.database({
-            env:'需要替换成自己的云开发id',
-        })
         var userInfo = this.userInfo
+        var that = this
         wx.cloud.callFunction({
             name: 'getUserOpenId',
             complete: res => {
@@ -62,11 +58,11 @@ App({
 
                 wx.cloud.callContainer({
                     "config": {
-                      "env": "需要替换成自己的云托管id"
+                      "env": this.envId
                     },
                     "path": "/GPTMGR/aicode/getUser",
                     "header": {
-                      "X-WX-SERVICE": "springboot-xg02"
+                      "X-WX-SERVICE": this.serviceId
                     },
                     "method": "GET",
                     "data": {
@@ -84,13 +80,14 @@ App({
                             }
                             if(10300===code){
                                 console.info('账号不存在')
+                                console.info(that.serviceId)
                                 wx.cloud.callContainer({
                                     "config": {
-                                      "env": "需要替换成自己的云托管id"
+                                      "env": that.envId
                                     },
                                     "path": "/GPTMGR/aicode/register",
                                     "header": {
-                                      "X-WX-SERVICE": "springboot-xg02"
+                                      "X-WX-SERVICE": that.serviceId
                                     },
                                     "method": "POST",
                                     "data": {
