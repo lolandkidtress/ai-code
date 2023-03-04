@@ -8,7 +8,7 @@ Page({
      * 页面的初始数据
      */
     data: {
-        value: null,
+        question: null,
         items: [],
         flag: false,
         scrollTop: 0,
@@ -18,7 +18,10 @@ Page({
         showInputInviteCodeText: false,
         showHelpText: false,
         showSourceText: false,
+        showProMenu: false,
         topicid: null,
+        // 调用的接口
+        currentApiMode: 'rev',
     },
     /**
      * 生命周期函数--监听页面加载
@@ -39,11 +42,16 @@ Page({
     onShow() {
 
     },
-
+    switchApiMode(e) {
+        console.info(e)
+        this.data.currentApiMode = e.currentTarget.dataset.mode
+        console.info(this.data)
+        this.setData({currentApiMode: e.currentTarget.dataset.mode})
+    },
     handleInput(e) {
         // console.info(e.detail.value)
-        this.data.value = e.detail.value
-        this.setData({value: e.detail.value})
+        this.data.question = e.detail.value
+        this.setData({question: e.detail.value})
     },
     clearTopic(e) {
         if(this.data.topicid) {
@@ -80,18 +88,18 @@ Page({
     },
     sendContent() {
         console.info('sendContent');
-        const { items, value, scrollTop } = this.data
-        console.info(value)
-        if(value === null) {
+        const { items, question, scrollTop } = this.data
+        console.info(question)
+        if(question === null) {
             wx.showToast({
-                title: '请输入内容',
+                title: '请输入问题',
                 icon:'none'
             })
             return 
         }
-        if(value.length < 5) {
+        if(question.length < 5) {
             wx.showToast({
-                title: '输入的问题过于简单',
+                title: '输入的问题字数太少',
                 icon:'none'
             })
             return
@@ -99,15 +107,15 @@ Page({
         wx.cloud.callFunction({
             name:"msgSecCheck",
             data:{
-              msg: value,
+              msg: question,
             }
         }).then(res=>{
             console.log(res)
             if(res.result.code === 500) {
                 console.log("检查未通过");
-                this.setData({ value: null })
+                this.setData({ question: null })
                 wx.showToast({
-                    title: '内容包含敏感词,请重新数据',
+                    title: '问题中包含敏感信息,请修改后,在提问',
                     icon:'none'
                 })
                 return 
@@ -117,116 +125,189 @@ Page({
                 items.push({
                     success: 'true',
                     position: 'right',
-                    content: value
+                    content: question
                 })
                 items.push({
                     success: 'true',
                     position: 'left',
                     content: ''
                 })
-
-                this.setData({ items, value: null, scrollTop: scrollTop + 2000 })
+                this.setData({ items, scrollTop: scrollTop + 2000 })
                 const his = items.filter(res=> res.position === 'right').map(res => res.content)
                 his.pop()
-                wx.cloud.callContainer({
-                    "config": {
-                    "env": app.envId
-                    },
-                    "path": "/TCGMGR/v1/chat/getCurrentTopicOrSet",
-                    "header": {
-                    "X-WX-SERVICE": app.serviceId,
-                    "content-type": "application/json"
-                    },
-                    "method": "GET",
-                    "data": {
-                        "openid": app.userInfo.openId,
-                    }
-                }).then(res=>{
-                    console.info(res)
-                    let statusCode = res.statusCode
-                    if(200 !== statusCode){
+                this.ask()
+            }
+        })
+    },
+    async getCurrentTopic(){
+        return new Promise((resolve,reject)=>{
+            wx.cloud.callContainer({
+                "config": {
+                "env": app.envId
+                },
+                "path": "/TCGMGR/v1/chat/getCurrentTopicOrSet",
+                "header": {
+                "X-WX-SERVICE": app.serviceId,
+                "content-type": "application/json"
+                },
+                "method": "GET",
+                "data": {
+                    "openid": app.userInfo.openId,
+                }
+            }).then(res=>{
+                console.info(res)
+                let statusCode = res.statusCode
+                if(200 !== statusCode){
+                    item.content = '服务负载过高,请稍后再试'
+                    item.success = 'false'
+                    this.setData({ items, flag: false, scrollTop: scrollTop + 2000 })
+                    return ''
+                } else{
+                    let topicid = res.data.data;
+                    this.setData({ topicid: topicid })
+                    return topicid
+                } 
+            })
+        }) 
+    },
+    async ask() {
+        const { currentApiMode } = this.data
+        if(currentApiMode === 'rev'){
+            this.askChat()
+        } 
+        if(currentApiMode === 'api'){
+            this.askApi()
+        }
+    },
+    async askChat() {
+        const { items,question,scrollTop } = this.data
+        wx.cloud.callContainer({
+            "config": {
+            "env": app.envId
+            },
+            "path": "/TCGMGR/v1/chat/getCurrentTopicOrSet",
+            "header": {
+            "X-WX-SERVICE": app.serviceId,
+            "content-type": "application/json"
+            },
+            "method": "GET",
+            "data": {
+                "openid": app.userInfo.openId,
+            }
+        }).then(res=>{
+            console.info(res)
+            let statusCode = res.statusCode
+            if(200 !== statusCode){
+                item.content = '服务负载过高,请稍后再试'
+                item.success = 'false'
+                this.setData({ items, flag: false, scrollTop: scrollTop + 2000 })
+                return
+            }
+            let topicid = res.data.data;
+            this.setData({ topicid: topicid })
+            wx.cloud.callContainer({
+                "config": {
+                "env": app.envId
+                },
+                "path": "/TCGMGR/v1/chat/ask",
+                "header": {
+                "X-WX-SERVICE": app.serviceId,
+                "content-type": "application/json"
+                },
+                "method": "POST",
+                "data": {
+                    "openId": app.userInfo.openId,
+                    "topicid": topicid,
+                    "question": question,
+                }
+            }).then(res=>{
+                let item = items.slice(-1)[0]
+                console.info(res)
+                let statusCode = res.statusCode
+                if(200 === statusCode){
+                    let response = res.data
+                    let code = response.code
+                    if(code === 10200) {
+                        this.handleAskResult(res.data.data)
+                    } else if(code === 10600) {
+                        item.content = '使用次数已耗尽'
+                        item.success = 'quotalimit'
+                        this.setData({ items, flag: false })
+                    } else {
                         item.content = '服务负载过高,请稍后再试'
                         item.success = 'false'
                         this.setData({ items, flag: false })
-                        return
                     }
-                    let topicid = res.data.data;
-                    this.setData({ topicid: topicid })
-                    wx.cloud.callContainer({
-                        "config": {
-                        "env": app.envId
-                        },
-                        "path": "/TCGMGR/v1/chat/ask",
-                        "header": {
-                        "X-WX-SERVICE": app.serviceId,
-                        "content-type": "application/json"
-                        },
-                        "method": "POST",
-                        "data": {
-                            "openId": app.userInfo.openId,
-                            "topicid": topicid,
-                            "question": value,
-                        }
-                    }).then(res=>{
-                        let item = items.slice(-1)[0]
-                        console.info(res)
-                        let statusCode = res.statusCode
-                        if(200 === statusCode){
-                            let response = res.data
-                            let code = response.code
-                            if(code === 10200) {
-                                this.handleAskResult(res.data.data)
-                            
-                            } else if(code === 10600) {
-                                item.content = '使用次数已耗尽'
-                                item.success = 'quotalimit'
-                                this.setData({ items, flag: false })
-                            } else {
-                                item.content = '服务负载过高,请稍后再试'
-                                item.success = 'false'
-                                this.setData({ items, flag: false })
-                            }
-                        } else {
-                            let item = items.slice(-1)[0]
-                            item.content = '服务器负载过高,请稍后再试'
-                            item.success = 'false'
-                            this.setData({ items, flag: false })
-                        }
-                        setTimeout(()=>{
-                            this.setData({flag: false, scrollTop: scrollTop + 2000 })
-                        })
-                    }).catch(res=>{
-                        console.info(res)
-                        let item = items.slice(-1)[0]
-                        item.content = '服务器太火爆了,请稍后再试'
-                        item.success = 'false'
-                        this.setData({ items, flag: false })
-                    })
+                } else {
+                    let item = items.slice(-1)[0]
+                    item.content = '服务器负载过高,请稍后再试'
+                    item.success = 'false'
+                    this.setData({ items, flag: false })
+                }
+                setTimeout(()=>{
+                    this.setData({flag: false, scrollTop: scrollTop + 2000 })
                 })
-
-
-            }
+            }).catch(res=>{
+                console.info(res)
+                let item = items.slice(-1)[0]
+                item.content = '服务器太火爆了,请稍后再试'
+                item.success = 'false'
+                this.setData({ items, flag: false, scrollTop: scrollTop + 2000 })
+            })
         })
-
-        
-        
-
-        // this.api.ai.sendQuery({ his, query: value })
-        // .then(res=> {
-        //     let item = items.slice(-1)[0]
-        //     item.content = res.data
-        //     item.success = 'true'
-        //     this.setData({ items })
-        //     setTimeout(()=>{
-        //         this.setData({flag: false, scrollTop: scrollTop + 2000 })
-        //     })
-        // })
-        // .catch(res=>{
-        //     let item = items.slice(-1)[0]
-        //     item.content = '服务器太火爆了,请稍后再试'
-        //     item.success = 'false'
-        //     this.setData({ items, flag: false })
-        // })
+    },
+    async askApi() {
+        console.info('askApi')
+        const { items,question,scrollTop } = this.data
+        wx.cloud.callContainer({
+            "config": {
+            "env": app.envId
+            },
+            "path": "/TCGMGR/aicode/doAsk",
+            "header": {
+            "X-WX-SERVICE": app.serviceId,
+            "content-type": "application/json"
+            },
+            "method": "POST",
+            "data": {
+                "openId": app.userInfo.openId,
+                "question": question,
+                "apikey":"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",
+            }
+        }).then(res=>{
+            let item = items.slice(-1)[0]
+            console.info(res)
+            let statusCode = res.statusCode
+            if(200 === statusCode){
+                let response = res.data
+                let code = response.code
+                if(code === 10200) {
+                    this.handleAskResult(res.data.data)
+                } else if(code === 10600) {
+                    item.content = '使用次数已耗尽'
+                    item.success = 'quotalimit'
+                    this.setData({ items, flag: false })
+                } else {
+                    item.content = '服务负载过高,请稍后再试'
+                    item.success = 'false'
+                    this.setData({ items, flag: false })
+                }
+            } else {
+                let item = items.slice(-1)[0]
+                item.content = '服务器负载过高,请稍后再试'
+                item.success = 'false'
+                this.setData({ items, flag: false })
+            }
+            setTimeout(()=>{
+                this.setData({flag: false, scrollTop: scrollTop + 2000 })
+            })
+        }).catch(res=>{
+            console.info(res)
+            let item = items.slice(-1)[0]
+            item.content = '服务器太火爆了,请稍后再试'
+            item.success = 'false'
+            this.setData({ items, flag: false, scrollTop: scrollTop + 2000 })
+        })
     },
     async sleep2second() {
         let s = new Date().getTime();
@@ -238,6 +319,7 @@ Page({
     sleep_inner(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     },
+    // rev接口的返回
     async findAnswer(askid) {
         console.info("执行定时器（带参数）"+askid);
         let breakWhile = false;
@@ -265,8 +347,17 @@ Page({
                         let id = response.data;
                         console.info("有结果"+id);
                         breakWhile = true;
-                        this.showAnswer(id)
-                        this.incrQuota()
+                        const { currentApiMode } = this.data
+                        if(currentApiMode === 'rev'){
+                            this.showRevAnswer(id)
+                            this.incrUsedHist('rev')
+                        } 
+                        if(currentApiMode === 'api'){
+                            this.showApiAnswer(id)
+                            this.incrUsedHist('api')
+                        }
+        
+                        
                     }
                 }
             })
@@ -282,11 +373,10 @@ Page({
     },
     handleAskResult(askid) {
         console.info(askid)
-        this.findAnswer(askid);
-        
+        this.findAnswer(askid);        
     },
     showError(errorContent,hint){
-        const { items, value, scrollTop } = this.data
+        const { items, question, scrollTop } = this.data
         const his = items.filter(res=> res.position === 'right').map(res => res.content)
         his.pop()
         let item = items.slice(-1)[0]
@@ -297,8 +387,45 @@ Page({
             this.setData({flag: false, scrollTop: scrollTop + 2000 })
         })
     },
-    showAnswer(answerid){
-        const { items, value, scrollTop } = this.data
+    showApiAnswer(answerid) {
+        const { items, question, scrollTop } = this.data
+        const his = items.filter(res=> res.position === 'right').map(res => res.content)
+        his.pop()
+
+        wx.cloud.callContainer({
+            "config": {
+            "env": app.envId
+            },
+            "path": "/TCGMGR/aicode/getAnswer?id="+answerid,
+            "header": {
+            "X-WX-SERVICE": app.serviceId,
+            "content-type": "application/json"
+            },
+            "method": "GET",
+            "data": {
+            }
+        }).then(res=>{
+            let statusCode = res.statusCode
+            if(200 === statusCode){
+                
+                let response = res.data
+                let code = response.code
+                if(code === 10200) {
+                    console.info(res.data)
+                    let result = response.data.result;
+                    let item = items.slice(-1)[0]
+                    item.content = result
+                    item.success = 'true'
+                    this.setData({ items })
+                    setTimeout(()=>{
+                        this.setData({flag: false, scrollTop: scrollTop + 2000 })
+                    })
+                }
+            }
+        })
+    },
+    showRevAnswer(answerid){
+        const { items, question, scrollTop } = this.data
         const his = items.filter(res=> res.position === 'right').map(res => res.content)
         his.pop()
 
@@ -333,8 +460,6 @@ Page({
                 }
             }
         })
-
-        
     },
     copyContent(e) {
         wx.setClipboardData({
@@ -343,36 +468,30 @@ Page({
     },
     showSource(e) {
         console.info(e)
+        const { items, scrollTop } = this.data
         // this.showInputInviteCodeText = true
         this.setData({
             showSourceText:true
         })
-        // 清掉对话框
-        var that = this
-        let items = []
-        that.setData({ items, flag: false })
+        that.setData({ items, scrollTop: scrollTop + 2000})
     },
     showHelp(e) {
         console.info(e)
+        const { items, scrollTop } = this.data
         // this.showInputInviteCodeText = true
         this.setData({
             showHelpText:true
         })
-        // 清掉对话框
-        var that = this
-        let items = []
-        that.setData({ items, flag: false })
+        that.setData({ items, scrollTop: scrollTop + 2000})
     },
     showInputCode(e) {
         console.info(e)
+        const { items, scrollTop } = this.data
         // this.showInputInviteCodeText = true
         this.setData({
             showInputInviteCodeText:true
         })
-        // 清掉对话框
-        var that = this
-        let items = []
-        that.setData({ items })
+        that.setData({ items, scrollTop: scrollTop + 2000})
     },
     handleInviteCodeChange(e) {
         this.data.invitecode = e.detail.value
@@ -451,20 +570,21 @@ Page({
             }
         })
     },
-    incrQuota() {
+    incrUsedHist(path) {
         console.info('incrQuota')
         var that = this
         wx.cloud.callContainer({
             "config": {
               "env": app.envId
             },
-            "path": "/TCGMGR/aicode/incrQuota",
+            "path": "/TCGMGR/aicode/incrUsedHist",
             "header": {
               "X-WX-SERVICE": app.serviceId
             },
             "method": "POST",
             "data": {
-              "openid": app.userInfo.openId
+              "openid": app.userInfo.openId,
+              "requestpath": path
             },
             success: function(res){
                 console.info(res)
@@ -493,26 +613,46 @@ Page({
                 console.info(res)
                 let statusCode = res.statusCode
                 if(200===statusCode){
-                    let cnt = res.data.data.cnt
-                    let maxcnt = res.data.data.maxcnt
                     const { items, scrollTop } = that.data
-                    items.push({
-                        success: 'quotadesc',
-                        position: 'left',
-                        content: '您当日已使用:'+cnt+'次'
-                    })
-                    items.push({
-                        success: 'quotadesc',
-                        position: 'left',
-                        content: '您当日可用:'+maxcnt+'次'
-                    })
-                    that.setData({ items, scrollTop: scrollTop + 4000 })
+                    let list = res.data.data
+                    for (var i in list) {
+                        let cnt = list[i].cnt
+                        let maxcnt = list[i].maxcnt
+                        
+                        console.info(list[i].requestpath)
+                        if("api" === list[i].requestpath){
+                            items.push({
+                                success: 'quotadesc',
+                                position: 'left',
+                                content: '简单会话:当日可用:'+maxcnt+'次,'+'已使用:'+cnt+'次'
+                            })
+                        }
+                        if("rev" === list[i].requestpath){
+                            items.push({
+                                success: 'quotadesc',
+                                position: 'left',
+                                content: '上下文会话:当日已使用:'+cnt+'次,'+'您当日可用:'+maxcnt+'次'
+                            })
+                        }
+                        
+                    }  
+                    that.setData({ items, scrollTop: scrollTop + 2000 })
                 }
             },
             fail: function(res){
                 console.info(res)
             }
         })
+    },
+    showProMenu(e) {
+        console.info(e)
+        const { items, scrollTop } = this.data
+        // this.showInputInviteCodeText = true
+        this.setData({
+            showProMenu:true
+        })
+        var that = this
+        that.setData({ items, scrollTop: scrollTop + 2000})
     },
     // 显示邀请码
     inviteCode(e) {
@@ -549,9 +689,9 @@ Page({
                     items.push({
                         success: 'invitecodedesc',
                         position: 'left',
-                        content: '好友输入邀请码后,您和好友的每日使用次数都将增加10次,最多邀请3人'
+                        content: '好友输入邀请码后,您和好友的每日使用次数都将增加3次,最多邀请3人'
                     })
-                    that.setData({ items, scrollTop: scrollTop + 4000 })
+                    that.setData({ items, scrollTop: scrollTop + 2000 })
                 }
             },
             fail: function(res){

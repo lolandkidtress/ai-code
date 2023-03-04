@@ -4,11 +4,13 @@
     <scroll-view class="header" scroll-y="{{true}}" scroll-with-animation="{{true}}" 	enable-passive="{{true}}" fast-deceleration="{{true}}" 	scroll-top="{{scrollTop}}" scroll-anchoring="{{true}}" >
         <view class="header_container">
             <view class="box box_left">
-                我是AI助手,可以问问题,可以对话,开始你的问题吧(支持上下文哦,支持完整版c***gpt plus功能)
-                <button class="button flex_row" bindtap="showInputCode">
-                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
-                    输入邀请码获取更多次数
-                </button>
+                我是AI助手,可以问问题,可以对话,开始你的问题吧
+                <view wx:if="{{currentApiMode === 'rev'}}">
+                    现处于上下文会话模式:可以连问,回答时会考虑上下文
+                </view>
+                <view wx:if="{{currentApiMode === 'api'}}">
+                    现处于简单会话模式:根据你的问题,直接回答,响应速度较快
+                </view>
                 <button class="button flex_row" data-content="{{item.content}}" bindtap="showHelp">
                     <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
                     显示帮助信息
@@ -16,6 +18,22 @@
                 <button class="button flex_row" data-content="{{item.content}}" bindtap="showSource">
                     <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
                     提供源码和部署指导
+                </button>
+                <!-- <button class="button flex_row" data-content="{{item.content}}" bindtap="showProMenu">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    显示专业应用场景
+                </button> -->
+            </view>
+            <view  class="control flex_row">
+                <button wx:if="{{currentApiMode === 'api'}}" data-mode="rev" class="button flex_row" bindtap="switchApiMode">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    切换到上下文会话模式
+                </button>
+            </view>
+            <view  class="control flex_row">
+                <button wx:if="{{currentApiMode === 'rev'}}" data-mode="api" class="button flex_row" bindtap="switchApiMode">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    切换到简单会话模式
                 </button>
             </view>
             <view wx:if="{{showSourceText}}" class="box box_left">
@@ -37,30 +55,53 @@
             </view>
             <view wx:if="{{showHelpText}}" class="box box_left">
                 <view>
-                    每人每天可以使用5次,每邀请一人可以获得5次次数,最多邀请3人
+                    作为AI对话,AI聊天助手,通过对话,给出即时的答案,还能结合上下文,实现多轮对话,解决连续性的问题.
                 </view>
                 <button class="button flex_row" data-content="{{item.content}}" bindtap="getQuota">
                     <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
                     查询我的使用次数
                 </button>
-            </view>
-            <view wx:if="{{showInputInviteCodeText}}" class="box box_left">
-                <label class="tag" >邀请码:</label>
-                <input type="text" id="invitecode" placeholder="请在此输入邀请码" bindchange="handleInviteCodeChange"/>
-                <button class="button flex_row" data-content="{{item.content}}" bindtap="inviteCode">
-                    <image src="/images/share.png" mode="widthFix" class="icon_share"/>
-                    获取我的邀请码
-                </button>
-                <button class="button flex_row" data-content="{{item.content}}" bindtap="getQuota">
+                <button class="button flex_row" bindtap="showInputCode">
                     <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
-                    查询我的使用次数
-                </button>
-                <button class="button flex_row" bindtap="inputCode">
-                    <image src="/images/send.png"  mode="widthFix" class="icon_copy"/>
-                    保存
+                    输入邀请码获取更多次数
                 </button>
             </view>
-
+            <view wx:if="{{showProMenu}}" class="box box_left">
+                <view>
+                    <button class="button flex_row" bindtap="showInputCode">
+                        <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        生成工作小结
+                    </button>
+                </view>
+                <view>
+                    <button class="button flex_row" bindtap="showInputCode">
+                        <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        写代码
+                    </button>
+                </view>
+            </view>
+            <view wx:if="{{showInputInviteCodeText}}">
+                <view class="box box_left">
+                    <label class="tag" >邀请码:</label>
+                    <input type="text" id="invitecode" placeholder="请在此输入邀请码" bindchange="handleInviteCodeChange"/>
+                    <button class="button flex_row" bindtap="inputCode">
+                        <image src="/images/send.png"  mode="widthFix" class="icon_copy"/>
+                        保存
+                    </button>
+                </view>
+                <view>
+                    <button class="button flex_row" data-content="{{item.content}}" bindtap="inviteCode">
+                        <image src="/images/share.png" mode="widthFix" class="icon_share"/>
+                        获取我的邀请码
+                    </button>
+                </view>
+                <view>
+                    <button class="button flex_row" data-content="{{item.content}}" bindtap="getQuota">
+                        <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        查询我的使用次数
+                    </button>
+                </view>
+            </view>
             <block wx:for="{{items}}" wx:key="index">
                 
                 <view class="flex_row">
@@ -96,7 +137,7 @@
                 <view  wx:if="{{item.position === 'left' && item.content && item.success === 'quotalimit'}}" class="control flex_row">
                     <button class="button flex_row" data-content="{{item.content}}" bindtap="inputCode">
                         <image src="/images/share.png" mode="widthFix" class="icon_share"/>
-                        输入验证码获取更多次数
+                        输入购买凭证获取更多次数
                     </button>
                 </view>
                 <view  wx:if="{{item.position === 'left' && item.content && item.success === 'invitecode'}}" class="control flex_row">
@@ -109,6 +150,12 @@
                     <button class="button flex_row" data-content="{{item.content}}" bindtap="getQuota">
                         <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
                         查询我的使用次数
+                    </button>
+                </view>
+                <view  wx:if="{{item.position === 'left' && item.content && item.success === 'quotadesc'}}" class="control flex_row">
+                    <button class="button flex_row" data-content="{{item.content}}" bindtap="inviteCode">
+                        <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        如何获取更多使用次数
                     </button>
                 </view>
                 <view class="flex_row" style="justify-content: flex-end;">

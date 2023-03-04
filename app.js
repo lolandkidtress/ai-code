@@ -13,7 +13,8 @@ App({
     },
     cloudId: 'cloud1-4gv4k6tha1359b2c',
     envId: 'prod-6gyeup90093341a8',
-    serviceId: 'springboot-xg02',
+    // serviceId: 'springboot-xg02',
+    serviceId: 'uat',
     /**
      * 当小程序初始化完成时，会触发 onLaunch（全局只触发一次）
      */
@@ -48,6 +49,7 @@ App({
 
     async saveUserInfoIfNotExist () {
         var userInfo = this.userInfo
+        var that = this
         wx.cloud.callFunction({
             name: 'getUserOpenId',
             complete: res => {
@@ -79,13 +81,14 @@ App({
                             }
                             if(10300===code){
                                 console.info('账号不存在')
+                                console.info(that.serviceId)
                                 wx.cloud.callContainer({
                                     "config": {
-                                      "env": this.envId
+                                      "env": that.envId
                                     },
                                     "path": "/TCGMGR/aicode/register",
                                     "header": {
-                                      "X-WX-SERVICE": this.serviceId
+                                      "X-WX-SERVICE": that.serviceId
                                     },
                                     "method": "POST",
                                     "data": {
