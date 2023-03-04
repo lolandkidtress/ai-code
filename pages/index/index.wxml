@@ -79,6 +79,18 @@
                         写代码
                     </button>
                 </view>
+                <view>
+                    <button class="button flex_row" bindtap="showInputCode">
+                        <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        读取pdf
+                    </button>
+                </view>
+                <view>
+                    <button class="button flex_row" bindtap="showInputCode">
+                        <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        生成PPT
+                    </button>
+                </view>
             </view>
             <view wx:if="{{showInputInviteCodeText}}">
                 <view class="box box_left">
@@ -137,7 +149,7 @@
                 <view  wx:if="{{item.position === 'left' && item.content && item.success === 'quotalimit'}}" class="control flex_row">
                     <button class="button flex_row" data-content="{{item.content}}" bindtap="inputCode">
                         <image src="/images/share.png" mode="widthFix" class="icon_share"/>
-                        输入购买凭证获取更多次数
+                        输入购买凭证成为会员
                     </button>
                 </view>
                 <view  wx:if="{{item.position === 'left' && item.content && item.success === 'invitecode'}}" class="control flex_row">
