@@ -18,10 +18,11 @@ Page({
         showInputInviteCodeText: false,
         showHelpText: false,
         showSourceText: false,
-        showProMenu: false,
+        showProMenuText: false,
+        showBuyInfoText: false,
         topicid: null,
         // 调用的接口
-        currentApiMode: 'rev',
+        currentApiMode: 'api',
     },
     /**
      * 生命周期函数--监听页面加载
@@ -197,6 +198,7 @@ Page({
         }).then(res=>{
             console.info(res)
             let statusCode = res.statusCode
+            let item = items.slice(-1)[0]
             if(200 !== statusCode){
                 item.content = '服务负载过高,请稍后再试'
                 item.success = 'false'
@@ -216,7 +218,7 @@ Page({
                 },
                 "method": "POST",
                 "data": {
-                    "openId": app.userInfo.openId,
+                    "openid": app.userInfo.openId,
                     "topicid": topicid,
                     "question": question,
                 }
@@ -272,7 +274,7 @@ Page({
             "data": {
                 "openId": app.userInfo.openId,
                 "question": question,
-                "apikey":"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",
+                // "apikey":"sk-e6oQO8illIES5yQIeN8cT3BlbkFJfQYnHh9pLNCdjbLRM37",
             }
         }).then(res=>{
             let item = items.slice(-1)[0]
@@ -350,11 +352,10 @@ Page({
                         const { currentApiMode } = this.data
                         if(currentApiMode === 'rev'){
                             this.showRevAnswer(id)
-                            this.incrUsedHist('rev')
                         } 
                         if(currentApiMode === 'api'){
                             this.showApiAnswer(id)
-                            this.incrUsedHist('api')
+                            
                         }
         
                         
@@ -420,6 +421,9 @@ Page({
                     setTimeout(()=>{
                         this.setData({flag: false, scrollTop: scrollTop + 2000 })
                     })
+                    this.incrUsedHist('api')
+                }else{
+                    this.showError('服务器太火爆了,请稍后再试','false')
                 }
             }
         })
@@ -457,6 +461,9 @@ Page({
                     setTimeout(()=>{
                         this.setData({flag: false, scrollTop: scrollTop + 2000 })
                     })
+                    this.incrUsedHist('rev')
+                }else{
+                    this.showError('服务器太火爆了,请稍后再试','false')
                 }
             }
         })
@@ -466,32 +473,58 @@ Page({
             data: e.currentTarget.dataset.content,
         })
     },
+    resetShowFlg() {
+        this.setData({
+            showSourceText:true,
+            showInputInviteCodeText: false,
+            showHelpText: false,
+            showSourceText: false,
+            showProMenuText: false,
+            showBuyInfoText: false,
+        })
+        const { items } = this.data
+        items.splice(0,items.length )
+        this.setData({ items })
+    },
     showSource(e) {
         console.info(e)
         const { items, scrollTop } = this.data
+        this.resetShowFlg()
         // this.showInputInviteCodeText = true
         this.setData({
             showSourceText:true
         })
-        that.setData({ items, scrollTop: scrollTop + 2000})
+        this.setData({ items, scrollTop: scrollTop + 2000})
     },
     showHelp(e) {
         console.info(e)
         const { items, scrollTop } = this.data
+        this.resetShowFlg()
         // this.showInputInviteCodeText = true
         this.setData({
             showHelpText:true
         })
-        that.setData({ items, scrollTop: scrollTop + 2000})
+        this.setData({ items, scrollTop: scrollTop + 2000})
     },
     showInputCode(e) {
         console.info(e)
         const { items, scrollTop } = this.data
         // this.showInputInviteCodeText = true
+        this.resetShowFlg()
         this.setData({
             showInputInviteCodeText:true
         })
-        that.setData({ items, scrollTop: scrollTop + 2000})
+        this.setData({ items, scrollTop: scrollTop + 2000})
+    },
+    showBuyInfo(e) {
+        console.info(e)
+        const { items, scrollTop } = this.data
+        this.resetShowFlg()
+        // this.showInputInviteCodeText = true
+        this.setData({
+            showBuyInfoText:true
+        })
+        this.setData({ items, scrollTop: scrollTop + 2000})
     },
     handleInviteCodeChange(e) {
         this.data.invitecode = e.detail.value
@@ -645,11 +678,13 @@ Page({
         })
     },
     showProMenu(e) {
+        
         console.info(e)
         const { items, scrollTop } = this.data
+        this.resetShowFlg()
         // this.showInputInviteCodeText = true
         this.setData({
-            showProMenu:true
+            showProMenuText:true
         })
         var that = this
         that.setData({ items, scrollTop: scrollTop + 2000})

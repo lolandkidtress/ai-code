@@ -19,10 +19,18 @@
                     <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
                     提供源码和部署指导
                 </button>
+                <!-- <button class="button flex_row" data-content="{{item.content}}" bindtap="showSource">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    免费使用简单对话模式
+                </button> -->
                 <!-- <button class="button flex_row" data-content="{{item.content}}" bindtap="showProMenu">
                     <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
                     显示专业应用场景
                 </button> -->
+                <button class="button flex_row" bindtap="showBuyInfo">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                    购买账号
+                </button>
             </view>
             <view  class="control flex_row">
                 <button wx:if="{{currentApiMode === 'api'}}" data-mode="rev" class="button flex_row" bindtap="switchApiMode">
@@ -38,24 +46,29 @@
             </view>
             <view wx:if="{{showSourceText}}" class="box box_left">
                 <view>
-                    提供全套源码和部署指导,10分钟即可部署,提交审核,具体请点击右侧联系客服
+                    1.调用官方接口的小程序和后端代码已开源在
+                    <text user-select="true">https://github.com/lolandkidtress/ai-code</text>
                 </view>
                 <view>
-                    Q.事先准备
+                    可以实现简单会话模式,可以帮助指导部署(有偿!有偿!有偿!)
                 </view>
                 <view>
-                    1.准备好微信小程序账号(必要)
+                    2.如需支持上下文会话模式,请联系客服咨询代码购买事宜
                 </view>
-                <view>
-                    2.自己电脑上安装好最新的微信开发者工具(可后续安装)
-                </view>
-                <view>
-                    3.自己电脑安装好java和maven环境(可后续安装)
-                </view>
+                <button class="button flex_row" data-content="https://github.com/lolandkidtress/ai-code" bindtap="copyContent">
+                    <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
+                        复制源码地址
+                    </button>
             </view>
             <view wx:if="{{showHelpText}}" class="box box_left">
                 <view>
                     作为AI对话,AI聊天助手,通过对话,给出即时的答案,还能结合上下文,实现多轮对话,解决连续性的问题.
+                </view>
+                <view>
+                    1.简单会话模式调用官方3.5的API接口,响应速度较快,但没有上下文模式
+                </view>
+                <view>
+                    2.上下文会话模式和网页版功能一样,支持无限的上下文,但响应速度较慢,
                 </view>
                 <button class="button flex_row" data-content="{{item.content}}" bindtap="getQuota">
                     <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
@@ -66,7 +79,12 @@
                     输入邀请码获取更多次数
                 </button>
             </view>
-            <view wx:if="{{showProMenu}}" class="box box_left">
+            <view wx:if="{{showBuyInfoText}}" class="box box_left">
+                <view>
+                    仅需5～20元即可体验到OpenAI·独享官方账号,联系客服购买
+                </view>
+            </view>
+            <view wx:if="{{showProMenuText}}" class="box box_left">
                 <view>
                     <button class="button flex_row" bindtap="showInputCode">
                         <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>
@@ -146,12 +164,12 @@
                         邀请朋友获取更多使用次数
                     </button>
                 </view>    
-                <view  wx:if="{{item.position === 'left' && item.content && item.success === 'quotalimit'}}" class="control flex_row">
+                <!-- <view  wx:if="{{item.position === 'left' && item.content && item.success === 'quotalimit'}}" class="control flex_row">
                     <button class="button flex_row" data-content="{{item.content}}" bindtap="inputCode">
                         <image src="/images/share.png" mode="widthFix" class="icon_share"/>
                         输入购买凭证成为会员
                     </button>
-                </view>
+                </view> -->
                 <view  wx:if="{{item.position === 'left' && item.content && item.success === 'invitecode'}}" class="control flex_row">
                     <button class="button flex_row" data-content="{{item.content}}" bindtap="copyContent">
                         <image src="/images/copy.png"  mode="widthFix" class="icon_copy"/>

@@ -13,8 +13,8 @@ App({
     },
     cloudId: 'cloud1-4gv4k6tha1359b2c',
     envId: 'prod-6gyeup90093341a8',
-    // serviceId: 'springboot-xg02',
-    serviceId: 'uat',
+    serviceId: 'springboot-xg02',
+    // serviceId: 'uat',
     /**
      * 当小程序初始化完成时，会触发 onLaunch（全局只触发一次）
      */
