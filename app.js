@@ -11,8 +11,8 @@ App({
         cnt: null,
         openId: null,
     },
-    cloudId: 'cloud1-4gv4k6tha1359b',
-    envId: 'prod-6gyeup90093341',
+    cloudId: 'cloud1-',
+    envId: 'prod-',
     serviceId: 'uat',
     /**
      * 当小程序初始化完成时，会触发 onLaunch（全局只触发一次）
@@ -60,7 +60,7 @@ App({
                     "config": {
                       "env": this.envId
                     },
-                    "path": "/GPTMGR/aicode/getUser",
+                    "path": "/TCGMGR/aicode/getUser",
                     "header": {
                       "X-WX-SERVICE": this.serviceId
                     },
@@ -85,7 +85,7 @@ App({
                                     "config": {
                                       "env": that.envId
                                     },
-                                    "path": "/GPTMGR/aicode/register",
+                                    "path": "/TCGMGR/aicode/register",
                                     "header": {
                                       "X-WX-SERVICE": that.serviceId
                                     },
